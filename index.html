@@ -398,6 +398,7 @@ Administrador
 <option value="">Carregando usuários...</option>
 </select>
 <div class="linha-admin" id="detalhesUsuarioAdmin" style="display:block;white-space:pre-line;">Carregando...</div>
+<button class="botao" id="btnPromoverUsuarioAdmin" onclick="promoverUsuarioAdmin()" disabled>Promover a administrador</button>
 <button class="botao excluir" id="btnExcluirUsuarioAdmin" onclick="excluirUsuarioAdmin()" disabled>Excluir Usuário</button>
 <button class="botao" onclick="carregarUsuariosAdmin()">Atualizar lista</button>
 </div>
@@ -592,10 +593,12 @@ async function carregarUsuariosAdmin() {
 const select = document.getElementById("usuarioAdminSelecionado");
 const detalhes = document.getElementById("detalhesUsuarioAdmin");
 const botao = document.getElementById("btnExcluirUsuarioAdmin");
-if (!select || !detalhes || !botao) return;
+const botaoPromover = document.getElementById("btnPromoverUsuarioAdmin");
+if (!select || !detalhes || !botao || !botaoPromover) return;
 
 detalhes.textContent = "Carregando usuários...";
 botao.disabled = true;
+botaoPromover.disabled = true;
 
 try {
 const r = await chamar("/api/admin/usuarios");
@@ -610,6 +613,7 @@ select.innerHTML = "";
 if (!usuariosAdmin.length) {
 select.add(new Option("Nenhum usuário cadastrado", ""));
 detalhes.textContent = "Nenhum usuário encontrado.";
+botaoPromover.disabled = true;
 return;
 }
 
@@ -629,11 +633,13 @@ function mostrarDetalhesUsuarioAdmin() {
 const select = document.getElementById("usuarioAdminSelecionado");
 const detalhes = document.getElementById("detalhesUsuarioAdmin");
 const botao = document.getElementById("btnExcluirUsuarioAdmin");
+const botaoPromover = document.getElementById("btnPromoverUsuarioAdmin");
 const u = usuariosAdmin.find(x => x.id === select.value);
 
 if (!u) {
 detalhes.textContent = "Selecione um usuário.";
 botao.disabled = true;
+botaoPromover.disabled = true;
 return;
 }
 
@@ -648,6 +654,29 @@ detalhes.textContent =
 "\nAdministrador: " + (u.admin ? "Sim" : "Não");
 
 botao.disabled = !usuario || u.id === usuario.id;
+botaoPromover.disabled = !usuario || u.id === usuario.id || u.admin;
+}
+
+async function promoverUsuarioAdmin() {
+const select = document.getElementById("usuarioAdminSelecionado");
+const u = usuariosAdmin.find(x => x.id === select.value);
+if (!u || !usuario || u.id === usuario.id || u.admin) return;
+
+if (!confirm("Promover " + (u.nome || u.nick || u.id) + " a administrador?")) return;
+
+try {
+const r = await chamar("/api/admin/usuarios/" + encodeURIComponent(u.id) + "/promover", {
+method: "POST"
+});
+if (!r.ok) {
+aviso(r.dados.erro || "Não foi possível promover o usuário.");
+return;
+}
+await carregarUsuariosAdmin();
+aviso(r.dados.mensagem || "Usuário promovido a administrador.");
+} catch (e) {
+aviso("Erro de conexão ao promover usuário.");
+}
 }
 
 async function excluirUsuarioAdmin() {
@@ -930,18 +959,20 @@ document.getElementById("erroRegistro").textContent = "";
 function atualizarRotuloRegistro() {
 const tipo = document.querySelector('input[name="tipoRegistro"]:checked').value;
 document.getElementById("rotuloRegTime").textContent =
-tipo === "dono" ? "Você é dono de qual time?" : "Qual é seu time?";
+tipo === "administrador" ? "Administrador não precisa escolher um time" : tipo === "dono" ? "Você é dono de qual time?" : "Qual é seu time?";
+document.getElementById("regTime").disabled = tipo === "administrador";
 document.getElementById("campoSenhaAdmin").hidden = tipo !== "administrador";
 if (tipo !== "administrador") document.getElementById("regSenhaAdmin").value = "";
 }
 
 async function registrar() {
+const tipoSelecionado = document.querySelector('input[name="tipoRegistro"]:checked').value;
 const dados = {
 nome: document.getElementById("regNome").value.trim(),
 nick: document.getElementById("regNick").value.trim(),
 email: document.getElementById("regEmail").value.trim(),
 posicao: document.getElementById("regPosicao").value,
-tipo: document.querySelector('input[name="tipoRegistro"]:checked').value,
+tipo: tipoSelecionado === "administrador" ? "admin" : tipoSelecionado,
 time: document.getElementById("regTime").value,
 senhaAdmin: document.getElementById("regSenhaAdmin").value
 };
@@ -950,12 +981,12 @@ const erro = document.getElementById("erroRegistro");
 const btn = document.getElementById("btnRegistrar");
 erro.textContent = "";
 
-if (!dados.nome || !dados.nick || !dados.email || !dados.time) {
+if (!dados.nome || !dados.nick || !dados.email || (dados.tipo !== "admin" && !dados.time)) {
 erro.textContent = "Preencha todos os campos.";
 return;
 }
 
-if (dados.tipo === "administrador" && !dados.senhaAdmin) {
+if (dados.tipo === "admin" && !dados.senhaAdmin) {
 erro.textContent = "Digite a senha de administrador.";
 return;
 }
