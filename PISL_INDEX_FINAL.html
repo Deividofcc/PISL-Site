@@ -1,0 +1,1267 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PISL 2026</title>
+<meta name="theme-color" content="#0a1020">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --fundo: #0a1020; --painel: #131b2e; --painel-2: #1a2440; --linha: #25304d; --ouro: #e0b52d; --ouro-claro: #f3d36b; --gramado: #123a2c; --texto: #eef1f8; --texto-suave: #9aa6c2; --perigo: #c0392b; --titulo: "Barlow Condensed", "Arial Narrow", Arial, sans-serif; --corpo: "Barlow", system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--fundo); color: var(--texto); font-family: var(--corpo); font-size: 16px; line-height: 1.55; -webkit-tap-highlight-color: transparent; }
+header { position: relative; text-align: center; padding: 56px 20px 46px; background: linear-gradient(180deg, rgba(10,16,32,.15), var(--fundo) 98%), repeating-linear-gradient(90deg, #0f3326 0 64px, #123a2c 64px 128px); border-bottom: 3px solid var(--ouro); overflow: hidden; }
+header::before { content: ""; position: absolute; left: 50%; top: 50%; width: 220px; height: 220px; transform: translate(-50%, -50%); border: 2px solid rgba(255,255,255,.12); border-radius: 50%; }
+header::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px solid rgba(255,255,255,.12); }
+header > * { position: relative; z-index: 1; }
+header h1 { margin: 0; font-family: var(--titulo); font-weight: 800; font-size: clamp(54px, 13vw, 104px); line-height: .95; letter-spacing: 3px; color: var(--ouro); text-shadow: 0 4px 24px rgba(0,0,0,.55); animation: entrada .8s cubic-bezier(.2,.8,.2,1) both; }
+header p { margin: 12px 0 0; color: #d4dcf0; font-size: 17px; animation: entrada .8s .15s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes entrada { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+nav { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; padding: 12px 14px; background: rgba(10,16,32,.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--linha); overflow-x: auto; scrollbar-width: none; justify-content: center; }
+nav::-webkit-scrollbar { display: none; }
+nav button { flex: 0 0 auto; background: transparent; color: var(--texto-suave); border: 1px solid var(--linha); padding: 10px 18px; border-radius: 999px; font: 600 15px var(--corpo); cursor: pointer; transition: background .2s, color .2s, border-color .2s, transform .15s; }
+nav button:hover { color: var(--texto); border-color: var(--ouro); }
+nav button:active { transform: scale(.96); }
+nav button.ativo { background: var(--ouro); border-color: var(--ouro); color: #1a1400; }
+section { display: none; padding: 28px 18px 40px; max-width: 1060px; margin: auto; }
+section.ativa { display: block; animation: trocar .35s ease both; }
+@keyframes trocar { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+h2 { font-family: var(--titulo); font-weight: 700; font-size: 38px; letter-spacing: 1px; color: var(--ouro); margin: 6px 0 18px; padding-bottom: 10px; border-bottom: 2px solid var(--linha); }
+h3 { font-family: var(--titulo); font-weight: 700; font-size: 24px; letter-spacing: .5px; margin: 0 0 8px; }
+.painel { background: var(--painel); border: 1px solid var(--linha); padding: 22px; border-radius: 14px; margin: 16px 0; }
+.painel p { margin: 6px 0; color: #cdd5ea; }
+.regras p { padding-left: 14px; border-left: 3px solid var(--ouro); margin: 10px 0; }
+.lista-clubes { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-bottom: 26px; }
+.clube { display: flex; align-items: center; gap: 12px; background: var(--painel); border: 1px solid var(--linha); padding: 12px 14px; border-radius: 12px; font-weight: 500; transition: transform .2s, border-color .2s, background .2s; }
+.clube:hover { transform: translateY(-2px); border-color: var(--ouro); background: var(--painel-2); }
+.clube .sigla { flex: 0 0 auto; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--painel-2); border: 1px solid var(--linha); font: 700 15px var(--titulo); letter-spacing: .5px; color: var(--texto-suave); }
+.clube.ownado { border-color: var(--ouro); }
+.clube.ownado .sigla { background: var(--ouro); border-color: var(--ouro); color: #1a1400; }
+.legenda { color: var(--texto-suave); font-size: 14px; margin: -8px 0 22px; }
+.tabela-container { overflow-x: auto; border: 1px solid var(--linha); border-radius: 14px; background: var(--painel); }
+table { width: 100%; border-collapse: collapse; min-width: 560px; }
+th, td { padding: 13px 10px; text-align: center; border-bottom: 1px solid var(--linha); }
+th { font: 700 15px var(--titulo); letter-spacing: 1px; color: var(--ouro); background: var(--painel-2); }
+td:nth-child(2), th:nth-child(2) { text-align: left; font-weight: 600; }
+tbody tr { transition: background .2s; }
+tbody tr:hover { background: var(--painel-2); }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:first-child td:first-child { box-shadow: inset 4px 0 0 var(--ouro); color: var(--ouro-claro); font-weight: 700; }
+td strong { color: var(--ouro-claro); font-size: 17px; }
+.mensagem { color: var(--texto-suave); padding: 14px 16px; margin-top: 14px; text-align: center; background: var(--painel); border: 1px dashed var(--linha); border-radius: 12px; font-size: 14px; }
+label { display: block; margin-top: 10px; font-weight: 600; color: #cdd5ea; font-size: 15px; }
+input, select, textarea { width: 100%; padding: 13px 14px; margin: 6px 0 12px; border: 1px solid var(--linha); border-radius: 10px; background: #0d1425; color: var(--texto); font: 16px var(--corpo); transition: border-color .2s, box-shadow .2s; }
+textarea { min-height: 110px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--ouro); box-shadow: 0 0 0 3px rgba(224,181,45,.2); }
+.lista-ownados { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin: 12px 0; }
+.opcao-ownado { display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 12px; background: #0d1425; border: 1px solid var(--linha); border-radius: 10px; cursor: pointer; font-weight: 500; transition: border-color .2s, background .2s; }
+.opcao-ownado:hover { border-color: var(--ouro); }
+.opcao-ownado:has(input:checked) { border-color: var(--ouro); background: var(--painel-2); }
+.opcao-ownado input { width: 18px; height: 18px; margin: 0; padding: 0; accent-color: var(--ouro); }
+.linha-admin { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; margin: 8px 0; background: #0d1425; border: 1px solid var(--linha); border-radius: 10px; }
+.linha-admin span { font-size: 15px; }
+.linha-admin .botao { padding: 7px 14px; font-size: 14px; margin: 0; flex: 0 0 auto; }
+.agenda { border-left-color: #5865F2; }
+.agenda .gols { font-size: 22px; color: var(--texto-suave); }
+.agenda .rodape strong { color: var(--ouro-claro); }
+.ajuda { color: var(--texto-suave); font-size: 14px; margin: -6px 0 12px; }
+h3.subtitulo { margin-top: 22px; }
+.botao { display: inline-block; background: var(--ouro); color: #1a1400; border: none; padding: 13px 22px; border-radius: 10px; font: 700 16px var(--corpo); cursor: pointer; margin: 6px 0; text-decoration: none; transition: background .2s, transform .15s, box-shadow .2s; }
+.botao:hover { background: var(--ouro-claro); box-shadow: 0 6px 18px rgba(224,181,45,.25); }
+.botao:active { transform: scale(.97); }
+.discord { background: #5865F2; color: #fff; }
+.discord:hover { background: #6d79ff; box-shadow: 0 6px 18px rgba(88,101,242,.35); }
+.excluir { background: transparent; color: #ff8a7d; border: 1px solid #5c2a2a; }
+.excluir:hover { background: var(--perigo); color: #fff; box-shadow: none; }
+:focus-visible { outline: 3px solid var(--ouro-claro); outline-offset: 2px; }
+#erroLogin { color: #ff8a7d; min-height: 22px; margin: 6px 0 0; }
+.jogo { background: var(--painel); border: 1px solid var(--linha); border-left: 4px solid var(--ouro); padding: 14px 16px; margin: 12px 0; border-radius: 12px; transition: transform .2s, background .2s; }
+.jogo:hover { background: var(--painel-2); transform: translateX(2px); }
+.placar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; text-align: center; }
+.placar .time { font-weight: 600; }
+.placar .time:first-child { text-align: right; }
+.placar .time:last-child { text-align: left; }
+.placar .gols { font: 800 30px var(--titulo); letter-spacing: 2px; color: var(--ouro-claro); background: #0d1425; border: 1px solid var(--linha); padding: 2px 16px; border-radius: 10px; white-space: nowrap; }
+.jogo .rodape { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 10px; flex-wrap: wrap; }
+.jogo .rodape span { color: var(--texto-suave); font-size: 14px; }
+.jogo .botao { padding: 7px 14px; font-size: 14px; margin: 0; }
+.vazio { color: var(--texto-suave); text-align: center; padding: 26px; background: var(--painel); border: 1px dashed var(--linha); border-radius: 12px; }
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 30px); background: var(--ouro); color: #1a1400; font-weight: 700; padding: 12px 20px; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 50; max-width: 90vw; text-align: center; }
+#toast.mostra { opacity: 1; transform: translate(-50%, 0); }
+footer { text-align: center; padding: 28px 18px 36px; color: #5d6988; font-size: 14px; border-top: 1px solid var(--linha); }
+#telaEntrada, #telaRoblox, #telaPerfil { display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 24px; background: repeating-linear-gradient(90deg, #0f3326 0 64px, #123a2c 64px 128px); }
+body.sem-login #telaEntrada, body.sem-roblox #telaRoblox, body.sem-perfil #telaPerfil { display: flex; }
+body.sem-login :is(header, nav, section, footer, .barra-usuario, .faixa-versao), body.sem-roblox :is(header, nav, section, footer, .barra-usuario, .faixa-versao), body.sem-perfil :is(header, nav, section, footer, .barra-usuario, .faixa-versao) { display: none !important; }
+[hidden] { display: none !important; }
+.caixa-entrada { width: 100%; max-width: 380px; background: var(--painel); border: 1px solid var(--linha); border-top: 3px solid var(--ouro); border-radius: 14px; padding: 26px; }
+.caixa-entrada h1 { font: 800 52px var(--titulo); letter-spacing: 2px; margin: 0; color: var(--ouro); text-align: center; }
+.caixa-entrada p { color: var(--texto-suave); text-align: center; }
+.caixa-entrada .botao { width: 100%; }
+#erroEntrada, #erroRoblox, #erroPerfil, #erroRegistro { color: #ff8a7d; min-height: 22px; }
+nav button[hidden] { display: none; }
+.barra-usuario { display: flex; justify-content: space-between; align-items: center; gap: 10px; max-width: 1060px; margin: 0 auto; padding: 10px 18px 0; color: var(--texto-suave); }
+.barra-usuario strong { color: var(--ouro-claro); }
+.barra-usuario button { background: transparent; color: var(--texto-suave); border: 1px solid var(--linha); border-radius: 999px; padding: 6px 14px; font: 600 14px var(--corpo); cursor: pointer; }
+.barra-usuario button:hover { color: var(--texto); border-color: var(--ouro); }
+.info { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--linha); }
+.info:last-child { border-bottom: 0; }
+.info span { color: var(--texto-suave); }
+.info strong { color: var(--ouro-claro); }
+.chat-mensagens { height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+.msg { background: #0d1425; border: 1px solid var(--linha); border-radius: 12px; padding: 8px 12px; max-width: 88%; word-break: break-word; }
+.msg.minha { align-self: flex-end; border-color: var(--ouro); }
+.msg .quem { font-weight: 700; color: var(--ouro-claro); font-size: 14px; }
+.msg .hora { color: var(--texto-suave); font-size: 12px; margin-left: 6px; }
+.msg .apagar { background: none; border: 0; color: #ff8a7d; cursor: pointer; font-size: 12px; margin-left: 6px; }
+.chat-enviar { display: flex; gap: 8px; margin-top: 12px; }
+.chat-enviar input { margin: 0; }
+.chat-enviar .botao { margin: 0; flex: 0 0 auto; }
+.canais { display: flex; gap: 8px; margin-bottom: 12px; }
+.canais button { background: transparent; color: var(--texto-suave); border: 1px solid var(--linha); border-radius: 999px; padding: 10px 18px; font: 600 15px var(--corpo); cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
+.canais button:hover { color: var(--texto); border-color: var(--ouro); }
+.canais button.ativo { background: var(--ouro); border-color: var(--ouro); color: #1a1400; }
+.msg.anuncio { border-color: var(--ouro); max-width: 100%; }
+.caixa-entrada + .caixa-entrada { margin-top: 0; }
+.lembrar { display: flex; align-items: center; gap: 10px; margin: 8px 0 12px; font-weight: 500; cursor: pointer; }
+.lembrar input { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; margin: 0; padding: 0; border: 2px solid var(--ouro); border-radius: 50%; background: transparent; flex: 0 0 auto; }
+.lembrar input:checked { background: var(--ouro); box-shadow: inset 0 0 0 4px var(--painel); }
+.trocar { font-size: 15px; }
+.trocar a { color: var(--ouro-claro); font-weight: 600; }
+#boxCredenciais h1 { font-size: 36px; word-break: break-word; }
+.badge { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 6px; border-radius: 999px; background: #e74c3c; color: #fff; font: 700 12px/20px var(--corpo); text-align: center; }
+.badge[hidden] { display: none; }
+.notif { background: #0d1425; border: 1px solid var(--linha); border-left: 4px solid var(--ouro); border-radius: 10px; padding: 10px 12px; margin: 8px 0; word-break: break-word; }
+.notif strong { color: var(--ouro-claro); font-size: 14px; }
+@media (max-width: 560px) { h2 { font-size: 32px; } .placar .gols { font-size: 26px; padding: 2px 12px; } nav { justify-content: flex-start; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+.botao:disabled { opacity: .6; cursor: wait; }
+</style>
+</head>
+<body class="sem-login">
+<div id="telaEntrada">
+<div class="caixa-entrada" id="boxLogin">
+<h1>PISL 2026</h1>
+<p>Entre com o seu ID e a sua senha.</p>
+<label for="entradaId">ID (9 dígitos)</label>
+<input id="entradaId" inputmode="numeric" maxlength="9" autocomplete="username" placeholder="000000000">
+<label for="entradaSenha">Senha (6 dígitos)</label>
+<input id="entradaSenha" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="••••••">
+<label class="lembrar"><input type="checkbox" id="lembrarLogin"> Manter conectado neste aparelho</label>
+<button class="botao" id="btnEntrar" onclick="entrarConta()">Entrar</button>
+<p id="erroEntrada"></p>
+<p class="trocar">Não tem um ID ou senha? <a href="#" onclick="mostrarRegistro(true); return false;">Registre-se</a></p>
+<p class="ajuda">Versão 1.0.2</p>
+</div>
+
+<div class="caixa-entrada" id="boxRegistro" hidden>
+<h1>Registre-se</h1>
+<p>Preencha para criar a sua conta.</p>
+
+<label for="regNome">Nome</label>
+<input id="regNome" maxlength="60" autocomplete="name">
+
+<label for="regNick">Nick do Roblox</label>
+<input id="regNick" maxlength="20" autocomplete="off">
+
+<label for="regEmail">Email</label>
+<input id="regEmail" type="email" maxlength="254" autocomplete="email">
+
+<label>Tipo de conta</label>
+<label class="lembrar">
+<input type="radio" name="tipoRegistro" value="jogador" checked onchange="atualizarRotuloRegistro()">
+Jogador
+</label>
+<label class="lembrar">
+<input type="radio" name="tipoRegistro" value="dono" onchange="atualizarRotuloRegistro()">
+Dono de time
+</label>
+<div id="campoTambemJogadorRegistro" hidden>
+<p>Você também é jogador?</p>
+<label class="lembrar"><input type="radio" name="tambemJogadorRegistro" value="true"> Sim</label>
+<label class="lembrar"><input type="radio" name="tambemJogadorRegistro" value="false" checked> Não</label>
+</div>
+<label class="lembrar">
+<input type="radio" name="tipoRegistro" value="administrador" onchange="atualizarRotuloRegistro()">
+Administrador
+</label>
+
+<div id="campoSenhaAdmin" hidden>
+<label for="regSenhaAdmin">Senha de administrador</label>
+<input id="regSenhaAdmin" type="password" maxlength="6" inputmode="numeric" placeholder="Digite a senha">
+</div>
+
+<label for="regTime" id="rotuloRegTime">Qual é seu time?</label>
+<select id="regTime"></select>
+
+<label for="regPosicao">Posicionamento</label>
+<select id="regPosicao">
+<option>Ata</option><option>PE</option><option>PD</option><option>MC</option><option>Vol</option><option>Zag</option><option>GK</option>
+</select>
+
+<button class="botao" id="btnRegistrar" onclick="registrar()">Criar conta</button>
+<p class="trocar"><a href="#" onclick="mostrarRegistro(false); return false;">Já tenho ID e senha</a></p>
+<p id="erroRegistro"></p>
+</div>
+
+<div class="caixa-entrada" id="boxCredenciais" hidden>
+<h1>Ei! <span id="credNick"></span></h1>
+<p>Anote isso. Caso você precise um dia e não saiba o seu ID e a sua senha, eles não podem ser recuperados. Aparecem só esta vez.</p>
+<div class="info"><span>ID</span><strong id="credId"></strong></div>
+<div class="info"><span>Senha</span><strong id="credSenha"></strong></div>
+<button class="botao" onclick="copiarCredenciais()">Copiar</button>
+<label class="lembrar"><input type="checkbox" id="jaSalvei" onchange="document.getElementById('btnAcessar').disabled = !this.checked"> Já salvei</label>
+<button class="botao" id="btnAcessar" disabled onclick="entrarComCredenciais()">Acessar agora</button>
+</div>
+</div>
+
+<div id="telaPerfil">
+<div class="caixa-entrada">
+<h1>Seu perfil</h1>
+<p>Você é jogador ou dono de time?</p>
+<label class="lembrar"><input type="radio" name="tipoPerfil" value="jogador" checked onchange="atualizarRotuloTime()"> Jogador</label>
+<label class="lembrar"><input type="radio" name="tipoPerfil" value="dono" onchange="atualizarRotuloTime()"> Dono de time</label>
+<div id="campoTambemJogador" hidden>
+<p>Você também joga?</p>
+<label class="lembrar"><input type="radio" name="tambemJogadorPerfil" value="true"> Sim, também sou jogador</label>
+<label class="lembrar"><input type="radio" name="tambemJogadorPerfil" value="false" checked> Não, sou apenas dono</label>
+</div>
+<label for="timePerfil" id="rotuloTime">Em qual time você joga?</label>
+<select id="timePerfil"></select>
+<button class="botao" onclick="salvarPerfil()">Salvar</button>
+<button class="botao excluir" id="btnCancelarPerfil" hidden onclick="fecharPerfil()">Cancelar</button>
+<p id="erroPerfil"></p>
+</div>
+</div>
+
+<header>
+<h1>PISL 2026</h1>
+<p>Professional International Soccer League</p>
+</header>
+
+<div id="telaRoblox">
+<div class="caixa-entrada">
+<h1>Olá!</h1>
+<p>Qual é o seu Nick do Roblox?</p>
+<label for="robloxNick">Nick do Roblox</label>
+<input id="robloxNick" maxlength="20" autocomplete="off" placeholder="Seu nick">
+<p>Confira com atenção: depois de confirmado, só o administrador pode alterar.</p>
+<button class="botao" onclick="salvarRoblox()">Confirmar</button>
+<p id="erroRoblox"></p>
+</div>
+</div>
+
+<div class="barra-usuario">
+<span>Olá, <strong id="nomeUsuario"></strong></span>
+<button onclick="sairConta()">Sair</button>
+</div>
+
+<nav>
+<button data-id="inicio" class="ativo" onclick="mostrar('inicio')">Início</button>
+<button data-id="clubes" onclick="mostrar('clubes')">Clubes</button>
+<button data-id="classificacao" onclick="mostrar('classificacao')">Classificação</button>
+<button data-id="jogos" onclick="mostrar('jogos')">Jogos</button>
+<button data-id="minhas" onclick="mostrar('minhas')">Minhas Informações</button>
+<button data-id="chat" onclick="mostrar('chat')">Canais</button>
+<button data-id="notificacoes" onclick="mostrar('notificacoes')">Notificações <span class="badge" id="badgeNotif" hidden>0</span></button>
+<button data-id="admin" id="btnAdmin" hidden onclick="mostrar('admin')">Administração</button>
+</nav>
+
+<section id="inicio" class="ativa">
+<h2>Bem-vindo à PISL 2026</h2>
+<div class="painel">
+<h3>Professional International Soccer League</h3>
+<p>Acompanhe os clubes, resultados e a classificação oficial da competição.</p>
+</div>
+<div class="painel">
+<h3>Servidor oficial da PISL</h3>
+<p>Entre no nosso servidor oficial do Discord!</p>
+<a class="botao discord" href="https://discord.gg/J4VRCvd8t" target="_blank" rel="noopener noreferrer">Entrar no Discord</a>
+</div>
+<div class="painel regras">
+<h3>Regras de pontuação</h3>
+<p>Vitória: 4 pontos para o vencedor e 1 para o perdedor.</p>
+<p>Empate: 2 pontos para cada clube.</p>
+<p>WO: 3 pontos para o clube presente e 0 para o ausente.</p>
+<p>Prazo de entrada: 10 minutos após o horário marcado.</p>
+</div>
+</section>
+
+<section id="clubes">
+<h2>Clubes participantes</h2>
+<p class="legenda">Clubes com destaque dourado já têm dono.</p>
+<h3>Brasil</h3>
+<div class="lista-clubes" id="clubesBrasil"></div>
+<h3>Europa</h3>
+<div class="lista-clubes" id="clubesEuropa"></div>
+</section>
+
+<section id="classificacao">
+<h2>Classificação oficial</h2>
+<div class="tabela-container">
+<table>
+<thead><tr><th>POS</th><th>CLUBE</th><th>PTS</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th><th>GP</th></tr></thead>
+<tbody id="tabelaClassificacao"></tbody>
+</table>
+</div>
+<p class="mensagem">Não há outros times na tabela pois não estão ownados.</p>
+</section>
+
+<section id="jogos">
+<h2>Resultados e jogos</h2>
+<div id="listaJogos"></div>
+</section>
+
+<section id="minhas">
+<h2>Minhas Informações</h2>
+<div class="painel">
+<div class="info"><span>Nome</span><strong id="infoNome"></strong></div>
+<div class="info"><span>Usuário/Nick</span><strong id="infoNick"></strong></div>
+<div class="info"><span>Posicionamento</span><strong id="infoPosicao"></strong></div>
+<div class="info"><span>Função</span><strong id="infoTipo"></strong></div>
+<div class="info"><span>Time</span><strong id="infoTime"></strong></div>
+<button class="botao" onclick="abrirPerfil(true)">Alterar função ou time</button>
+</div>
+</section>
+
+<section id="notificacoes">
+<h2>Notificações</h2>
+<div class="painel">
+<p class="ajuda" id="descNotif"></p>
+<div id="listaNotif"></div>
+<button class="botao" onclick="marcarLidas()">Marcar todas como lidas</button>
+</div>
+</section>
+
+<section id="chat">
+<h2>Canais</h2>
+<div class="canais">
+<button id="canalChat" class="ativo" onclick="trocarCanal('chat')"># Chat</button>
+<button id="canalAnuncio" onclick="trocarCanal('anuncio')"># Anúncio</button>
+</div>
+<div class="painel">
+<p id="descCanal" class="ajuda"></p>
+<div id="chatMensagens" class="chat-mensagens"></div>
+<div class="chat-enviar" id="chatEnviar">
+<input type="text" id="chatTexto" maxlength="300" placeholder="Escreva uma mensagem" autocomplete="off">
+<button class="botao" onclick="enviarChat()">Enviar</button>
+</div>
+</div>
+</section>
+
+<section id="admin">
+<h2>Administração da PISL</h2>
+<div class="painel" id="telaLogin">
+<h3>Acesso administrativo</h3>
+<label for="senhaAdmin">Senha de administrador</label>
+<input type="password" id="senhaAdmin" placeholder="Digite a senha" autocomplete="current-password">
+<button class="botao" onclick="entrarAdmin()"> Entrar </button>
+<p id="erroLogin"></p>
+</div>
+<div id="painelAdmin" style="display:none;">
+<div class="painel">
+<h3>Agendar jogo</h3>
+<p>Ao agendar, o bot avisa no Discord o horário e o servidor onde os times devem entrar.</p>
+<label>Clube mandante</label><select id="agMandante"></select>
+<label>Clube visitante</label><select id="agVisitante"></select>
+<label for="horarioJogo">Horário do jogo</label><input type="datetime-local" id="horarioJogo">
+<label for="servidorJogo">Servidor onde os times devem entrar</label>
+<input type="text" id="servidorJogo" placeholder="DeividG04" autocomplete="off">
+<p class="ajuda">Padrão: DeividG04. Troque se o jogo for em outro servidor.</p>
+<button class="botao" onclick="agendarJogo()"> Agendar e avisar o bot </button>
+</div>
+<div class="painel">
+<h3>Registrar resultado</h3>
+<label>Clube mandante</label><select id="mandante"></select>
+<label>Clube visitante</label><select id="visitante"></select>
+<label>Gols do mandante</label><input type="number" id="golsMandante" min="0" value="0">
+<label>Gols do visitante</label><input type="number" id="golsVisitante" min="0" value="0">
+<button class="botao" onclick="registrarResultado()"> Registrar resultado </button>
+</div>
+<div class="painel">
+<h3>Registrar WO</h3>
+<p>Se o adversário não entrar até 10 minutos depois do horário marcado, registre o WO para o clube presente.</p>
+<label>Clube presente (vencedor do WO)</label><select id="clubePresente"></select>
+<label>Clube ausente</label><select id="clubeAusente"></select>
+<button class="botao" onclick="registrarWO()"> Registrar WO </button>
+</div>
+<div class="painel">
+<h3>Gerenciar jogos</h3>
+<h3 class="subtitulo">Jogos agendados</h3>
+<div id="adminAgenda"></div>
+<h3 class="subtitulo">Resultados registrados</h3>
+<div id="adminResultados"></div>
+</div>
+<div class="painel">
+<h3>Times ownados</h3>
+<p>Marque os clubes que já têm dono. Só eles aparecem na classificação.</p>
+<div class="lista-ownados" id="listaOwnados"></div>
+<button class="botao" onclick="salvarOwnados()">Salvar e atualizar tabela</button>
+</div>
+<div class="painel">
+<h3>Gerenciar usuários</h3>
+<p>Selecione uma conta para consultar seus dados.</p>
+<select id="usuarioAdminSelecionado" onchange="mostrarDetalhesUsuarioAdmin()" style="width:100%;padding:12px;border-radius:8px;background:#0d1425;color:white;border:1px solid var(--linha);">
+<option value="">Carregando usuários...</option>
+</select>
+<div class="linha-admin" id="detalhesUsuarioAdmin" style="display:block;white-space:pre-line;">Carregando...</div>
+<button class="botao" id="btnPromoverUsuarioAdmin" onclick="promoverUsuarioAdmin()" disabled>Promover a administrador</button>
+<button class="botao" id="btnBloquearUsuarioAdmin" onclick="bloquearUsuarioAdmin()" disabled>Bloquear conta</button>
+<button class="botao" id="btnDesbloquearUsuarioAdmin" onclick="desbloquearUsuarioAdmin()" disabled>Desbloquear conta</button>
+<button class="botao excluir" id="btnExcluirUsuarioAdmin" onclick="excluirUsuarioAdmin()" disabled>Excluir Usuário</button>
+<button class="botao" onclick="carregarUsuariosAdmin()">Atualizar lista</button>
+</div>
+
+
+<button class="botao excluir" onclick="sairAdmin()"> Sair da administração </button>
+</div>
+</section>
+
+<footer>PISL 2026 — Professional International Soccer League</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+function mostrarErroPagina(msg) {
+const el = document.getElementById("erroEntrada");
+if (el) el.textContent = "Erro na página: " + msg;
+}
+window.addEventListener("error", e => mostrarErroPagina(e.message));
+window.addEventListener("unhandledrejection", e => mostrarErroPagina(e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+
+const clubesBrasil = ["Flamengo", "Palmeiras", "Santos", "São Paulo", "Vasco da Gama", "Fluminense", "Cruzeiro", "Corinthians", "Atlético Mineiro", "Grêmio"];
+const clubesEuropa = ["Barcelona", "Inter de Milão", "Manchester United", "Bayern de Munique", "Paris Saint-Germain", "Real Madrid", "Atlético de Madrid", "Liverpool", "Arsenal", "Chelsea"];
+const clubes = [...clubesBrasil, ...clubesEuropa];
+
+let timesOwnados = JSON.parse(localStorage.getItem("pisl_ownados")) || ["Palmeiras", "Barcelona", "Corinthians"];
+let jogos = JSON.parse(localStorage.getItem("pisl_jogos")) || [];
+
+function salvar() { localStorage.setItem("pisl_jogos", JSON.stringify(jogos)); }
+
+let toastTimer;
+function aviso(texto) {
+const t = document.getElementById("toast");
+t.textContent = texto;
+t.classList.add("mostra");
+clearTimeout(toastTimer);
+toastTimer = setTimeout(() => t.classList.remove("mostra"), 2600);
+}
+
+function mostrar(id) {
+if (id === "admin" && !(usuario && usuario.admin)) return;
+document.querySelectorAll("section").forEach(secao => secao.classList.remove("ativa"));
+document.querySelectorAll("nav button").forEach(b => b.classList.toggle("ativo", b.dataset.id === id));
+document.getElementById(id).classList.add("ativa");
+if (id === "chat") iniciarChat(); else pararChat();
+if (id === "notificacoes") atualizarNotificacoes(true);
+window.scrollTo({ top: 0, behavior: "smooth" });
+atualizar();
+}
+
+function sigla(nome) {
+const palavras = nome.split(" ").filter(p => p.length > 2);
+const base = palavras.length > 1 ? palavras : [nome];
+return base.slice(0, 2).map(p => p[0]).join("").toUpperCase();
+}
+
+function cartaoClube(clube) {
+const dono = timesOwnados.includes(clube) ? " ownado" : "";
+return `<div class="clube${dono}"><span class="sigla">${sigla(clube)}</span>${clube}</div>`;
+}
+
+function atualizarCartoesClubes() {
+document.getElementById("clubesBrasil").innerHTML = clubesBrasil.map(cartaoClube).join("");
+document.getElementById("clubesEuropa").innerHTML = clubesEuropa.map(cartaoClube).join("");
+}
+
+function carregarOwnados() {
+document.getElementById("listaOwnados").innerHTML = clubes.map(clube =>
+`<label class="opcao-ownado"><input type="checkbox" value="${clube}" ${timesOwnados.includes(clube) ? "checked" : ""}> ${clube}</label>`
+).join("");
+}
+
+function salvarOwnados() {
+timesOwnados = Array.from(document.querySelectorAll("#listaOwnados input:checked")).map(caixa => caixa.value);
+localStorage.setItem("pisl_ownados", JSON.stringify(timesOwnados));
+atualizarCartoesClubes();
+atualizar();
+aviso("Times ownados salvos e tabela atualizada!");
+}
+
+function carregarClubes() {
+atualizarCartoesClubes();
+carregarOwnados();
+const opcoes = clubes.map(clube => `<option value="${clube}">${clube}</option>`).join("");
+["mandante", "visitante", "clubePresente", "clubeAusente", "agMandante", "agVisitante", "regTime", "timePerfil"].forEach(id => {
+document.getElementById(id).innerHTML = opcoes;
+});
+}
+
+function estatisticas() {
+const dados = {};
+clubes.forEach(clube => { dados[clube] = { pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0 }; });
+dados["Palmeiras"].pts = 6;
+dados["Barcelona"].pts = 1;
+dados["Corinthians"].pts = 0;
+jogos.forEach(jogo => {
+const a = dados[jogo.mandante];
+const b = dados[jogo.visitante];
+if (!a || !b) return;
+a.j++; b.j++;
+if (jogo.wo) { a.pts += 3; a.v++; b.d++; return; }
+a.gp += jogo.golsMandante; a.gc += jogo.golsVisitante;
+b.gp += jogo.golsVisitante; b.gc += jogo.golsMandante;
+if (jogo.golsMandante > jogo.golsVisitante) { a.pts += 4; a.v++; b.pts += 1; b.d++; }
+else if (jogo.golsMandante < jogo.golsVisitante) { b.pts += 4; b.v++; a.pts += 1; a.d++; }
+else { a.pts += 2; b.pts += 2; a.e++; b.e++; }
+});
+return Object.entries(dados).map(([nome, d]) => ({ nome, ...d, sg: d.gp - d.gc })).sort((a, b) => b.pts - a.pts || b.sg - a.sg || b.gp - a.gp || a.nome.localeCompare(b.nome));
+}
+
+function atualizarClassificacao() {
+const classificacao = estatisticas();
+const tabela = classificacao.filter(clube => timesOwnados.includes(clube.nome));
+if (tabela.length === 0) {
+document.getElementById("tabelaClassificacao").innerHTML = '<tr><td colspan="9">Nenhum time ownado ainda.</td></tr>';
+return;
+}
+document.getElementById("tabelaClassificacao").innerHTML = tabela.map((clube, indice) =>
+`<tr><td>${indice + 1}º</td><td>${clube.nome}</td><td><strong>${clube.pts}</strong></td><td>${clube.j}</td><td>${clube.v}</td><td>${clube.e}</td><td>${clube.d}</td><td>${clube.sg}</td><td>${clube.gp}</td></tr>`
+).join("");
+}
+
+let agenda = JSON.parse(localStorage.getItem("pisl_agenda")) || [];
+function salvarAgenda() { localStorage.setItem("pisl_agenda", JSON.stringify(agenda)); }
+
+function formatarHorario(valor) {
+const data = new Date(valor);
+if (isNaN(data)) return valor;
+return data.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
+
+function atualizarJogos() {
+const lista = document.getElementById("listaJogos");
+const proximos = agenda.map((jogo, indice) => ({ ...jogo, indice })).sort((a, b) => a.horario.localeCompare(b.horario));
+let html = "";
+if (proximos.length > 0) {
+html += '<h3>Próximos jogos</h3>' + proximos.map(jogo =>
+`<div class="jogo agenda"><div class="placar"><div class="time">${jogo.mandante}</div><div class="gols">VS</div><div class="time">${jogo.visitante}</div></div><div class="rodape"><span>Horário: ${formatarHorario(jogo.horario)}</span><span>Entrar no servidor: <strong>${jogo.servidor}</strong></span></div></div>`
+).join("");
+}
+if (jogos.length === 0) {
+html += proximos.length === 0 ? '<p class="vazio">Nenhum jogo ou resultado registrado ainda.</p>' : '';
+lista.innerHTML = html;
+return;
+}
+html += '<h3 class="subtitulo">Resultados</h3>' + jogos.map((jogo, indice) =>
+`<div class="jogo"><div class="placar"><div class="time">${jogo.mandante}</div><div class="gols">${jogo.wo ? "WO" : `${jogo.golsMandante} x ${jogo.golsVisitante}`}</div><div class="time">${jogo.visitante}</div></div><div class="rodape"><span>${jogo.wo ? `${jogo.mandante} venceu por WO` : "Resultado oficial"}</span>${adminLogado ? `<button class="botao excluir" onclick="excluirJogo(${indice})"> Excluir resultado </button>` : ""}</div></div>`
+).join("");
+lista.innerHTML = html;
+}
+
+function atualizarAdminListas() {
+const ag = document.getElementById("adminAgenda");
+const res = document.getElementById("adminResultados");
+ag.innerHTML = agenda.length === 0 ? '<p class="vazio">Nenhum jogo agendado.</p>' : agenda.map((j, i) =>
+`<div class="linha-admin"><span>${j.mandante} x ${j.visitante} — ${formatarHorario(j.horario)} — ${j.servidor}</span><button class="botao excluir" onclick="excluirAgenda(${i})">Excluir</button></div>`
+).join("");
+res.innerHTML = jogos.length === 0 ? '<p class="vazio">Nenhum resultado registrado.</p>' : jogos.map((j, i) =>
+`<div class="linha-admin"><span>${j.mandante} ${j.wo ? "venceu por WO" : `${j.golsMandante} x ${j.golsVisitante}`} ${j.visitante}</span><button class="botao excluir" onclick="excluirJogo(${i})">Excluir</button></div>`
+).join("");
+}
+
+let API_URL = "https://wishlist-scientist-casual-shapes.trycloudflare.com";
+const HASH_SENHA = "0aa84b31aa82a70e66219a183d479c648935739145034c8d4f6366c5f764bae7";
+let adminLogado = false;
+
+async function sha256(texto) {
+const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto));
+return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function entrarAdmin() {
+const senha = document.getElementById("senhaAdmin").value;
+const erro = document.getElementById("erroLogin");
+erro.textContent = "";
+if (await sha256(senha) !== HASH_SENHA) { erro.textContent = "Senha incorreta."; return; }
+if (!usuario || !usuario.admin) {
+erro.textContent = "Entre no site com uma conta de administrador.";
+return;
+}
+adminLogado = true;
+document.getElementById("telaLogin").style.display = "none";
+document.getElementById("painelAdmin").style.display = "block";
+document.getElementById("senhaAdmin").value = "";
+atualizarJogos();
+carregarUsuariosAdmin();
+}
+
+
+let usuariosAdmin = [];
+
+async function carregarUsuariosAdmin() {
+const select = document.getElementById("usuarioAdminSelecionado");
+const detalhes = document.getElementById("detalhesUsuarioAdmin");
+const botao = document.getElementById("btnExcluirUsuarioAdmin");
+const botaoPromover = document.getElementById("btnPromoverUsuarioAdmin");
+const botaoBloquear = document.getElementById("btnBloquearUsuarioAdmin");
+const botaoDesbloquear = document.getElementById("btnDesbloquearUsuarioAdmin");
+if (!select || !detalhes || !botao || !botaoPromover) return;
+
+detalhes.textContent = "Carregando usuários...";
+botao.disabled = true;
+botaoPromover.disabled = true;
+if (botaoBloquear) botaoBloquear.disabled = true;
+if (botaoDesbloquear) botaoDesbloquear.disabled = true;
+
+try {
+const r = await chamar("/api/admin/usuarios");
+if (!r.ok) {
+detalhes.textContent = r.dados.erro || "Não foi possível carregar os usuários.";
+return;
+}
+
+usuariosAdmin = Array.isArray(r.dados.usuarios) ? r.dados.usuarios : [];
+select.innerHTML = "";
+
+if (!usuariosAdmin.length) {
+select.add(new Option("Nenhum usuário cadastrado", ""));
+detalhes.textContent = "Nenhum usuário encontrado.";
+botaoPromover.disabled = true;
+return;
+}
+
+usuariosAdmin.forEach(u => {
+select.add(new Option((u.nome || u.nick || "Sem nome") + " — " + u.id, u.id));
+});
+
+mostrarDetalhesUsuarioAdmin();
+} catch (e) {
+detalhes.textContent = "Erro de conexão ao carregar usuários.";
+} finally {
+select.disabled = false;
+}
+}
+
+function mostrarDetalhesUsuarioAdmin() {
+const select = document.getElementById("usuarioAdminSelecionado");
+const detalhes = document.getElementById("detalhesUsuarioAdmin");
+const botao = document.getElementById("btnExcluirUsuarioAdmin");
+const botaoPromover = document.getElementById("btnPromoverUsuarioAdmin");
+const botaoBloquear = document.getElementById("btnBloquearUsuarioAdmin");
+const botaoDesbloquear = document.getElementById("btnDesbloquearUsuarioAdmin");
+const u = usuariosAdmin.find(x => x.id === select.value);
+
+if (!u) {
+detalhes.textContent = "Selecione um usuário.";
+botao.disabled = true;
+botaoPromover.disabled = true;
+if (botaoBloquear) botaoBloquear.disabled = true;
+if (botaoDesbloquear) botaoDesbloquear.disabled = true;
+return;
+}
+
+detalhes.textContent =
+"Nome: " + (u.nome || "-") +
+"\nNick: " + (u.nick || "-") +
+"\nRoblox: " + (u.roblox || "-") +
+"\nID: " + u.id +
+"\nTipo: " + (u.tipo || "-") +
+"\nTime: " + (u.time || "-") +
+"\nPosição: " + (u.posicao || "-") +
+"\nE-mail: " + (u.email || "-") +
+"\nAdministrador: " + (u.admin ? "Sim" : "Não") +
+"\nEstado: " + (u.bloqueado ? "Bloqueada" : "Ativa");
+
+botao.disabled = !usuario || u.id === usuario.id;
+botaoPromover.disabled = !usuario || u.id === usuario.id || u.admin;
+if (botaoBloquear) botaoBloquear.disabled = !usuario || u.id === usuario.id || u.id === "623865664" || !!u.bloqueado;
+if (botaoDesbloquear) botaoDesbloquear.disabled = !usuario || u.id === usuario.id || !u.bloqueado;
+}
+
+async function promoverUsuarioAdmin() {
+const select = document.getElementById("usuarioAdminSelecionado");
+const u = usuariosAdmin.find(x => x.id === select.value);
+if (!u || !usuario || u.id === usuario.id || u.admin) return;
+
+if (!confirm("Promover " + (u.nome || u.nick || u.id) + " a administrador?")) return;
+
+try {
+const r = await chamar("/api/admin/usuarios/" + encodeURIComponent(u.id) + "/promover", {
+method: "POST"
+});
+if (!r.ok) {
+aviso(r.dados.erro || "Não foi possível promover o usuário.");
+return;
+}
+await carregarUsuariosAdmin();
+aviso(r.dados.mensagem || "Usuário promovido a administrador.");
+} catch (e) {
+aviso("Erro de conexão ao promover usuário.");
+}
+}
+
+
+async function alterarBloqueioUsuarioAdmin(acao) {
+const select = document.getElementById("usuarioAdminSelecionado");
+const u = usuariosAdmin.find(x => x.id === select.value);
+if (!u || !usuario || u.id === usuario.id) return;
+if (acao === "bloquear" && u.id === "623865664") return;
+
+const verbo = acao === "bloquear" ? "bloquear" : "desbloquear";
+if (!confirm("Tem certeza que deseja " + verbo + " a conta de " + (u.nome || u.nick || u.id) + "?")) return;
+
+try {
+const r = await chamar("/api/admin/usuarios/" + encodeURIComponent(u.id) + "/" + verbo, { method: "POST" });
+if (!r.ok) {
+aviso(r.dados.erro || "Não foi possível " + verbo + " a conta.");
+return;
+}
+await carregarUsuariosAdmin();
+aviso(r.dados.mensagem || "Conta atualizada com sucesso.");
+} catch (e) {
+aviso("Erro de conexão ao " + verbo + " a conta.");
+}
+}
+
+async function bloquearUsuarioAdmin() {
+return alterarBloqueioUsuarioAdmin("bloquear");
+}
+
+async function desbloquearUsuarioAdmin() {
+return alterarBloqueioUsuarioAdmin("desbloquear");
+}
+
+async function excluirUsuarioAdmin() {
+const select = document.getElementById("usuarioAdminSelecionado");
+const u = usuariosAdmin.find(x => x.id === select.value);
+if (!u || !usuario || u.id === usuario.id) return;
+
+if (!confirm("Tem certeza que deseja excluir a conta de " +
+(u.nome || u.nick || u.id) + "? Esta ação não poderá ser desfeita.")) return;
+
+try {
+const r = await chamar("/api/admin/usuarios/" + encodeURIComponent(u.id), {
+method: "DELETE"
+});
+
+if (!r.ok) {
+aviso(r.dados.erro || "Não foi possível excluir o usuário.");
+return;
+}
+
+await carregarUsuariosAdmin();
+aviso(r.dados.mensagem || "Usuário excluído com sucesso.");
+} catch (e) {
+aviso("Erro de conexão ao excluir usuário.");
+}
+}
+
+function sairAdmin() {
+adminLogado = false;
+document.getElementById("painelAdmin").style.display = "none";
+document.getElementById("telaLogin").style.display = "block";
+atualizarJogos();
+}
+
+function agendarJogo() {
+const mandante = document.getElementById("agMandante").value;
+const visitante = document.getElementById("agVisitante").value;
+const horario = document.getElementById("horarioJogo").value;
+const servidor = document.getElementById("servidorJogo").value.trim();
+if (mandante === visitante) { aviso("Um clube não pode jogar contra ele mesmo!"); return; }
+if (!horario) { aviso("Informe o horário do jogo."); return; }
+if (!servidor) { aviso("Informe o servidor onde os times devem entrar."); return; }
+localStorage.setItem("pisl_servidor", servidor);
+const jogo = { mandante, visitante, horario, servidor };
+agenda.push(jogo);
+salvarAgenda();
+atualizar();
+aviso("Jogo agendado!");
+}
+
+document.getElementById("senhaAdmin").addEventListener("keydown", e => { if (e.key === "Enter") entrarAdmin(); });
+
+function registrarResultado() {
+const mandante = document.getElementById("mandante").value;
+const visitante = document.getElementById("visitante").value;
+const golsMandante = Number(document.getElementById("golsMandante").value);
+const golsVisitante = Number(document.getElementById("golsVisitante").value);
+if (mandante === visitante) { aviso("Um clube não pode jogar contra ele mesmo!"); return; }
+if (!Number.isInteger(golsMandante) || !Number.isInteger(golsVisitante) || golsMandante < 0 || golsVisitante < 0) {
+aviso("Informe resultados válidos.");
+return;
+}
+const jogo = { mandante, visitante, golsMandante, golsVisitante, wo: false };
+jogos.push(jogo);
+salvar();
+atualizar();
+aviso("Resultado registrado com sucesso!");
+}
+
+function registrarWO() {
+const presente = document.getElementById("clubePresente").value;
+const ausente = document.getElementById("clubeAusente").value;
+if (presente === ausente) { aviso("Os clubes precisam ser diferentes!"); return; }
+const jogo = { mandante: presente, visitante: ausente, golsMandante: 0, golsVisitante: 0, wo: true };
+jogos.push(jogo);
+salvar();
+atualizar();
+aviso("WO registrado! O clube presente recebeu 3 pontos.");
+}
+
+let sessao = localStorage.getItem("pisl_sessao") || sessionStorage.getItem("pisl_sessao") || "";
+let perfilUsuario = null;
+let notifTimer = null;
+let notifAnterior = null;
+
+function guardarSessao(token, lembrar) {
+limparSessao();
+(lembrar ? localStorage : sessionStorage).setItem("pisl_sessao", token);
+}
+function limparSessao() {
+localStorage.removeItem("pisl_sessao");
+sessionStorage.removeItem("pisl_sessao");
+}
+
+let usuario = null;
+let chatUltimo = 0;
+let canalAtual = "chat";
+let chatTimer = null;
+
+async function carregarApi() {
+try {
+const resposta = await fetch("api.txt?t=" + Date.now(), { cache: "no-store" });
+if (!resposta.ok) return;
+const url = (await resposta.text()).trim().replace(/\/+$/, "");
+if (/^https:\/\/[A-Za-z0-9.-]+$/.test(url)) API_URL = url;
+} catch (e) {}
+}
+const apiPronta = carregarApi();
+
+async function chamar(rota, opcoes = {}) {
+await apiPronta;
+const ctrl = new AbortController();
+const timer = setTimeout(() => ctrl.abort(), 15000);
+try {
+const resposta = await fetch(`${API_URL}${rota}`, {
+...opcoes,
+signal: ctrl.signal,
+headers: {
+...(opcoes.body ? { "Content-Type": "application/json" } : {}),
+...(sessao ? { "Authorization": `Bearer ${sessao}` } : {})
+}
+});
+const dados = await resposta.json().catch(() => ({}));
+return { ok: resposta.ok, status: resposta.status, dados };
+} finally { clearTimeout(timer); }
+}
+
+function msgSemConexao(e) {
+if (e && e.name === "AbortError") return `A API (${new URL(API_URL).host}) demorou mais de 15 segundos para responder. O túnel pode estar lento ou desligado.`;
+return `Sem conexão com a API (${new URL(API_URL).host}). Erro: ${e ? e.name + " - " + e.message : "desconhecido"}. Página: ${location.origin}.`;
+}
+
+function aplicarUsuario(u) {
+usuario = u;
+document.body.classList.remove("sem-login");
+document.body.classList.toggle("sem-roblox", !!u.precisaRoblox);
+document.getElementById("nomeUsuario").textContent = u.nick;
+document.getElementById("infoNick").textContent = u.nick;
+document.getElementById("infoPosicao").textContent = u.posicao;
+document.getElementById("btnAdmin").hidden = !u.admin;
+}
+
+function mostrarEntrada(msg) {
+usuario = null;
+canalAtual = "chat";
+pararChat();
+pararNotificacoes();
+perfilUsuario = null;
+document.body.classList.remove("sem-roblox", "sem-perfil");
+document.body.classList.add("sem-login");
+document.getElementById("erroEntrada").textContent = msg || "";
+}
+
+async function iniciarSessao() {
+if (!sessao) { mostrarEntrada(); return; }
+try {
+const r = await chamar("/api/eu");
+if (r.ok) { await entrarNoSite(r.dados.usuario, false); return; }
+sessao = "";
+limparSessao();
+mostrarEntrada();
+} catch (e) { mostrarEntrada(msgSemConexao(e)); }
+}
+
+async function entrarConta() {
+const id = document.getElementById("entradaId").value.trim();
+const senha = document.getElementById("entradaSenha").value.trim();
+const erro = document.getElementById("erroEntrada");
+erro.textContent = "";
+if (!/^\d{9}$/.test(id) || !/^\d{6}$/.test(senha)) {
+erro.textContent = "O ID tem 9 dígitos e a senha tem 6 dígitos.";
+return;
+}
+const btn = document.getElementById("btnEntrar");
+btn.disabled = true;
+btn.textContent = "Entrando...";
+try {
+sessao = "";
+const r = await chamar("/api/entrar", { method: "POST", body: JSON.stringify({ id, senha }) });
+if (!r.ok) { erro.textContent = r.dados.erro || "Não foi possível entrar."; return; }
+sessao = r.dados.token;
+guardarSessao(sessao, document.getElementById("lembrarLogin").checked);
+document.getElementById("entradaSenha").value = "";
+await entrarNoSite(r.dados.usuario, true);
+} catch (e) { erro.textContent = msgSemConexao(e); }
+finally { btn.disabled = false; btn.textContent = "Entrar"; }
+}
+
+async function salvarRoblox() {
+const nick = document.getElementById("robloxNick").value.trim();
+const erro = document.getElementById("erroRoblox");
+erro.textContent = "";
+if (!/^[A-Za-z0-9_]{3,20}$/.test(nick)) {
+erro.textContent = "Nick inválido: use 3 a 20 letras, números ou _.";
+return;
+}
+try {
+const r = await chamar("/api/roblox", { method: "POST", body: JSON.stringify({ nick }) });
+if (!r.ok) { erro.textContent = r.dados.erro || "Não foi possível salvar."; return; }
+await entrarNoSite(r.dados.usuario, true);
+} catch (e) { erro.textContent = msgSemConexao(e); }
+}
+
+async function sairConta() {
+const nome = usuario ? usuario.nick : "";
+try { await chamar("/api/sair", { method: "POST", body: "{}" }); } catch (e) {}
+sessao = "";
+limparSessao();
+if (adminLogado) sairAdmin();
+mostrarEntrada();
+aviso(`Até logo, ${nome}!`);
+}
+
+async function entrarNoSite(u, boasVindas) {
+aplicarUsuario(u);
+if (u.precisaRoblox) return;
+await carregarPerfil();
+mostrar("inicio");
+iniciarNotificacoes();
+if (boasVindas) aviso(`Bem-vindo, ${u.nick}!`);
+}
+
+function preencherPerfilUI() {
+const p = perfilUsuario || {};
+document.getElementById("infoNome").textContent = p.nome || "-";
+document.getElementById("infoTipo").textContent = p.tipo === "dono" ? "Dono de time" : p.tipo === "jogador" ? "Jogador" : "-";
+document.getElementById("infoTime").textContent = p.time || "-";
+}
+
+async function carregarPerfil() {
+const r = await chamar("/api/perfil");
+if (!r.ok) return;
+perfilUsuario = r.dados.perfil;
+preencherPerfilUI();
+if (!perfilUsuario.tipo) abrirPerfil(false);
+}
+
+function atualizarRotuloTime() {
+const dono = document.querySelector('input[name="tipoPerfil"]:checked').value === "dono";
+document.getElementById("rotuloTime").textContent = dono ? "De qual time você é dono?" : "Em qual time você joga?";
+document.getElementById("campoTambemJogador").hidden = !dono;
+}
+
+function abrirPerfil(podeCancelar) {
+const p = perfilUsuario || {};
+const donos = p.donos || {};
+const sel = document.getElementById("timePerfil");
+sel.innerHTML = clubes.map(c => `<option value="${c}">${c}${donos[c] ? " (dono: " + donos[c] + ")" : ""}</option>`).join("");
+if (p.time) sel.value = p.time;
+document.querySelector('input[name="tambemJogadorPerfil"][value="' + (p.tambemJogador ? "true" : "false") + '"]').checked = true;
+document.querySelector(`input[name="tipoPerfil"][value="${p.tipo || "jogador"}"]`).checked = true;
+atualizarRotuloTime();
+document.getElementById("btnCancelarPerfil").hidden = !podeCancelar;
+document.getElementById("erroPerfil").textContent = "";
+document.body.classList.add("sem-perfil");
+}
+
+function fecharPerfil() { document.body.classList.remove("sem-perfil"); }
+
+async function salvarPerfil() {
+const tipo = document.querySelector('input[name="tipoPerfil"]:checked').value;
+const time = document.getElementById("timePerfil").value;
+const erro = document.getElementById("erroPerfil");
+erro.textContent = "";
+try {
+const r = await chamar("/api/perfil", { method: "POST", body: JSON.stringify({ tipo, time, tambemJogador: tipo === "dono" && document.querySelector('input[name="tambemJogadorPerfil"]:checked').value === "true" }) });
+if (!r.ok) { erro.textContent = r.dados.erro || "Não foi possível salvar."; return; }
+perfilUsuario = r.dados.perfil;
+preencherPerfilUI();
+fecharPerfil();
+aviso("Perfil salvo!");
+} catch (e) { erro.textContent = msgSemConexao(e); }
+}
+
+function mostrarRegistro(abrir) {
+document.getElementById("boxLogin").hidden = abrir;
+document.getElementById("boxRegistro").hidden = !abrir;
+document.getElementById("boxCredenciais").hidden = true;
+document.getElementById("erroRegistro").textContent = "";
+}
+
+function atualizarRotuloRegistro() {
+const tipo = document.querySelector('input[name="tipoRegistro"]:checked').value;
+document.getElementById("rotuloRegTime").textContent =
+tipo === "administrador" ? "Administrador não precisa escolher um time" : tipo === "dono" ? "Você é dono de qual time?" : "Qual é seu time?";
+document.getElementById("regTime").disabled = tipo === "administrador";
+document.getElementById("campoSenhaAdmin").hidden = tipo !== "administrador";
+if (tipo !== "administrador") document.getElementById("regSenhaAdmin").value = "";
+document.getElementById("campoTambemJogadorRegistro").hidden = tipo !== "dono";
+}
+
+async function registrar() {
+const tipoSelecionado = document.querySelector('input[name="tipoRegistro"]:checked').value;
+const dados = {
+nome: document.getElementById("regNome").value.trim(),
+nick: document.getElementById("regNick").value.trim(),
+email: document.getElementById("regEmail").value.trim(),
+posicao: document.getElementById("regPosicao").value,
+tipo: tipoSelecionado === "administrador" ? "admin" : tipoSelecionado,
+time: document.getElementById("regTime").value,
+tambemJogador: tipoSelecionado === "dono" ? document.querySelector('input[name="tambemJogadorRegistro"]:checked').value === "true" : false,
+senhaAdmin: document.getElementById("regSenhaAdmin").value
+};
+
+const erro = document.getElementById("erroRegistro");
+const btn = document.getElementById("btnRegistrar");
+erro.textContent = "";
+
+if (!dados.nome || !dados.nick || !dados.email || (dados.tipo !== "admin" && !dados.time)) {
+erro.textContent = "Preencha todos os campos.";
+return;
+}
+
+if (dados.tipo === "admin" && !dados.senhaAdmin) {
+erro.textContent = "Digite a senha de administrador.";
+return;
+}
+
+btn.disabled = true;
+btn.textContent = "Criando...";
+
+try {
+const r = await chamar("/api/registrar", { method: "POST", body: JSON.stringify(dados) });
+
+if (!r.ok) {
+erro.textContent = r.dados.erro || "Não foi possível criar a conta.";
+return;
+}
+
+document.getElementById("credNick").textContent = r.dados.nick || dados.nick;
+document.getElementById("jaSalvei").checked = false;
+document.getElementById("btnAcessar").disabled = true;
+document.getElementById("credId").textContent = r.dados.id;
+document.getElementById("credSenha").textContent = r.dados.senha;
+document.getElementById("boxRegistro").hidden = true;
+document.getElementById("boxCredenciais").hidden = false;
+
+} catch (e) {
+erro.textContent = msgSemConexao(e);
+} finally {
+btn.disabled = false;
+btn.textContent = "Criar conta";
+}
+}
+
+async function copiarCredenciais() {
+const texto = `ID: ${document.getElementById("credId").textContent}\nSenha: ${document.getElementById("credSenha").textContent}`;
+try { await navigator.clipboard.writeText(texto); aviso("Copiado!"); }
+catch (e) { aviso("Não foi possível copiar. Anote à mão."); }
+}
+
+function entrarComCredenciais() {
+if (!document.getElementById("jaSalvei").checked) return;
+document.getElementById("entradaId").value = document.getElementById("credId").textContent;
+document.getElementById("entradaSenha").value = document.getElementById("credSenha").textContent;
+mostrarRegistro(false);
+entrarConta();
+}
+
+async function atualizarNotificacoes(silencioso) {
+try {
+const r = await chamar("/api/notificacoes");
+if (!r.ok) return;
+const d = r.dados;
+const badge = document.getElementById("badgeNotif");
+badge.textContent = d.total > 99 ? "99+" : d.total;
+badge.hidden = d.total === 0;
+if (notifAnterior !== null && d.total > notifAnterior && !silencioso) {
+const novo = d.itens[0];
+aviso(novo && novo.canal === "registro" ? "Novo jogador registrado!" : novo && novo.canal === "anuncio" ? "Novo anúncio!" : "Nova mensagem no Chat!");
+}
+notifAnterior = d.total;
+document.getElementById("descNotif").textContent = d.total ? `Você tem ${d.total} notificação(ões) não lida(s).` : "Nenhuma notificação nova.";
+const lista = document.getElementById("listaNotif");
+lista.innerHTML = "";
+d.itens.forEach(i => {
+const div = document.createElement("div");
+div.className = "notif";
+const titulo = document.createElement("strong");
+titulo.textContent = (i.canal === "anuncio" ? "Anúncio" : i.canal === "registro" ? "Novo registro" : "Chat") + " · " + i.nick + " · " + horaMsg(i.em);
+const texto = document.createElement("div");
+texto.textContent = i.texto;
+div.append(titulo, texto);
+lista.append(div);
+});
+} catch (e) {}
+}
+
+function iniciarNotificacoes() {
+pararNotificacoes();
+notifAnterior = null;
+atualizarNotificacoes(true);
+notifTimer = setInterval(atualizarNotificacoes, 10000);
+}
+
+function pararNotificacoes() { clearInterval(notifTimer); notifTimer = null; }
+
+async function marcarLidas(canal) {
+try { await chamar("/api/notificacoes/lidas", { method: "POST", body: JSON.stringify(canal ? { canal } : {}) }); } catch (e) {}
+atualizarNotificacoes(true);
+}
+
+function horaMsg(iso) {
+return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+async function carregarChat() {
+try {
+const r = await chamar(`/api/chat?canal=${canalAtual}&depois=${chatUltimo}`);
+if (r.status === 401) { mostrarEntrada("Sua sessão expirou. Entre de novo."); return; }
+if (!r.ok) return;
+const caixa = document.getElementById("chatMensagens");
+const noFim = caixa.scrollHeight - caixa.scrollTop - caixa.clientHeight < 60;
+r.dados.mensagens.forEach(m => {
+chatUltimo = Math.max(chatUltimo, m.n);
+const div = document.createElement("div");
+div.className = "msg" + (usuario && m.nick === usuario.nick ? " minha" : "") + (canalAtual === "anuncio" ? " anuncio" : "");
+div.dataset.n = m.n;
+const quem = document.createElement("span");
+quem.className = "quem";
+quem.textContent = m.nick;
+const hora = document.createElement("span");
+hora.className = "hora";
+hora.textContent = horaMsg(m.em);
+div.append(quem, hora);
+if (usuario && usuario.admin) {
+const x = document.createElement("button");
+x.className = "apagar";
+x.textContent = "apagar";
+x.onclick = () => apagarMensagem(m.n);
+div.append(x);
+}
+const texto = document.createElement("div");
+texto.textContent = m.texto;
+div.append(texto);
+caixa.append(div);
+});
+if (r.dados.mensagens.length && noFim) caixa.scrollTop = caixa.scrollHeight;
+if (r.dados.mensagens.length) marcarLidas(canalAtual);
+} catch (e) {}
+}
+
+function atualizarCanalUI() {
+const podeFalar = canalAtual === "chat" || (usuario && usuario.admin);
+document.getElementById("canalChat").classList.toggle("ativo", canalAtual === "chat");
+document.getElementById("canalAnuncio").classList.toggle("ativo", canalAtual === "anuncio");
+document.getElementById("chatEnviar").style.display = podeFalar ? "flex" : "none";
+document.getElementById("descCanal").textContent = canalAtual === "chat" ? "Use este canal para conversar com todos." : "Canal de avisos oficiais. Só o administrador pode escrever aqui.";
+document.getElementById("chatTexto").maxLength = canalAtual === "anuncio" ? 1000 : 300;
+}
+
+function trocarCanal(canal) { canalAtual = canal; iniciarChat(); }
+
+function iniciarChat() {
+pararChat();
+atualizarCanalUI();
+chatUltimo = 0;
+document.getElementById("chatMensagens").innerHTML = "";
+carregarChat();
+chatTimer = setInterval(carregarChat, 3000);
+}
+
+function pararChat() { clearInterval(chatTimer); chatTimer = null; }
+
+async function enviarChat() {
+const campo = document.getElementById("chatTexto");
+const texto = campo.value.trim();
+if (!texto) return;
+try {
+const r = await chamar("/api/chat", { method: "POST", body: JSON.stringify({ texto, canal: canalAtual }) });
+if (r.ok) { campo.value = ""; carregarChat(); }
+else { aviso(r.dados.erro || "Mensagem não enviada."); }
+} catch (e) { aviso("Sem conexão com a API."); }
+}
+
+async function apagarMensagem(n) {
+try {
+const r = await chamar("/api/chat/apagar", { method: "POST", body: JSON.stringify({ n }) });
+if (r.ok) {
+const el = document.querySelector(`#chatMensagens [data-n="${n}"]`);
+if (el) el.remove();
+}
+} catch (e) {}
+}
+
+["entradaId", "entradaSenha"].forEach(id => {
+document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") entrarConta(); });
+});
+
+document.getElementById("robloxNick").addEventListener("keydown", e => { if (e.key === "Enter") salvarRoblox(); });
+document.getElementById("chatTexto").addEventListener("keydown", e => { if (e.key === "Enter") enviarChat(); });
+
+let confirmando = null;
+let confirmandoTimer;
+
+function confirmarDuasVezes(chave) {
+if (confirmando === chave) { confirmando = null; return true; }
+confirmando = chave;
+aviso("Toque em Excluir de novo para confirmar.");
+clearTimeout(confirmandoTimer);
+confirmandoTimer = setTimeout(() => { confirmando = null; }, 4000);
+return false;
+}
+
+function excluirJogo(indice) {
+if (!confirmarDuasVezes("jogo" + indice)) return;
+jogos.splice(indice, 1);
+salvar();
+atualizar();
+aviso("Resultado excluído.");
+}
+
+function excluirAgenda(indice) {
+if (!confirmarDuasVezes("agenda" + indice)) return;
+agenda.splice(indice, 1);
+salvarAgenda();
+atualizar();
+aviso("Jogo agendado excluído.");
+}
+
+function atualizar() {
+atualizarClassificacao();
+atualizarJogos();
+atualizarAdminListas();
+}
+
+document.getElementById("servidorJogo").value = localStorage.getItem("pisl_servidor") || "DeividG04";
+carregarClubes();
+atualizar();
+iniciarSessao();
+</script>
+</body>
+</html>
