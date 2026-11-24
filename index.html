@@ -300,15 +300,23 @@ Administrador
 </section>
 
 <section id="classificacao">
-<h2>Classificação oficial</h2>
+<h2>Classificações oficiais</h2>
+<h3>Brasileirão</h3>
 <div class="tabela-container">
 <table>
 <thead><tr><th>POS</th><th>CLUBE</th><th>PTS</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th><th>GP</th></tr></thead>
-<tbody id="tabelaClassificacao"></tbody>
+<tbody id="tabelaBrasileirao"></tbody>
 </table>
 </div>
-<p class="mensagem">Não há outros times na tabela pois não estão ownados.</p>
-</section>
+<h3>Champions</h3>
+<div class="tabela-container">
+<table>
+<thead><tr><th>POS</th><th>CLUBE</th><th>PTS</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th><th>GP</th></tr></thead>
+<tbody id="tabelaChampions"></tbody>
+</table>
+</div>
+<p class="mensagem">Somente clubes com dono aparecem nas classificações.</p>
+</section></section>
 
 <section id="jogos">
 <h2>Resultados e jogos</h2>
@@ -375,6 +383,11 @@ Administrador
 </div>
 <div class="painel">
 <h3>Registrar resultado</h3>
+<label>Competição</label>
+<select id="competicaoResultado">
+<option value="brasileirao">Brasileirão</option>
+<option value="champions">Champions</option>
+</select>
 <label>Clube mandante</label><select id="mandante"></select>
 <label>Clube visitante</label><select id="visitante"></select>
 <label>Gols do mandante</label><input type="number" id="golsMandante" min="0" value="0">
@@ -383,6 +396,11 @@ Administrador
 </div>
 <div class="painel">
 <h3>Registrar WO</h3>
+<label>Competição</label>
+<select id="competicaoWO">
+<option value="brasileirao">Brasileirão</option>
+<option value="champions">Champions</option>
+</select>
 <p>Se o adversário não entrar até 10 minutos depois do horário marcado, registre o WO para o clube presente.</p>
 <label>Clube presente (vencedor do WO)</label><select id="clubePresente"></select>
 <label>Clube ausente</label><select id="clubeAusente"></select>
@@ -400,6 +418,17 @@ Administrador
 <p>Marque os clubes que já têm dono. Só eles aparecem na classificação.</p>
 <div class="lista-ownados" id="listaOwnados"></div>
 <button class="botao" onclick="salvarOwnados()">Salvar e atualizar tabela</button>
+</div>
+<div class="painel">
+<h3>Redefinir Pontos</h3>
+<p>Apaga todas as estatísticas e os resultados da competição escolhida. Os clubes e seus donos continuam cadastrados.</p>
+<label>De qual tabela?</label>
+<select id="tabelaRedefinir">
+<option value="champions">Champions</option>
+<option value="brasileirao">Brasileirão</option>
+<option value="ambos">Dos dois</option>
+</select>
+<button class="botao excluir" onclick="redefinirPontos()">Redefinir Pontos</button>
 </div>
 <div class="painel" id="painelEstatisticasAdmin">
 <h3>Estatísticas administrativas</h3>
@@ -517,13 +546,30 @@ document.getElementById(id).innerHTML = opcoes;
 });
 }
 
-function estatisticas() {
+function competenciaDoJogo(jogo) {
+if (jogo.competicao === "brasileirao" || jogo.competicao === "champions") return jogo.competicao;
+if (clubesBrasil.includes(jogo.mandante) && clubesBrasil.includes(jogo.visitante)) return "brasileirao";
+if (clubesEuropa.includes(jogo.mandante) && clubesEuropa.includes(jogo.visitante)) return "champions";
+return null;
+}
+
+function clubePertence(clube, competicao) {
+return competicao === "brasileirao"
+? clubesBrasil.includes(clube)
+: clubesEuropa.includes(clube);
+}
+
+function nomeCompeticao(competicao) {
+return competicao === "brasileirao" ? "Brasileirão" :
+competicao === "champions" ? "Champions" : "Competição não identificada";
+}
+
+function estatisticas(competicao) {
+const lista = competicao === "brasileirao" ? clubesBrasil : clubesEuropa;
 const dados = {};
-clubes.forEach(clube => { dados[clube] = { pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0 }; });
-dados["Palmeiras"].pts = 6;
-dados["Barcelona"].pts = 1;
-dados["Corinthians"].pts = 0;
-jogos.forEach(jogo => {
+lista.forEach(clube => { dados[clube] = { pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0 }; });
+
+jogos.filter(jogo => competenciaDoJogo(jogo) === competicao).forEach(jogo => {
 const a = dados[jogo.mandante];
 const b = dados[jogo.visitante];
 if (!a || !b) return;
@@ -538,16 +584,31 @@ else { a.pts += 2; b.pts += 2; a.e++; b.e++; }
 return Object.entries(dados).map(([nome, d]) => ({ nome, ...d, sg: d.gp - d.gc })).sort((a, b) => b.pts - a.pts || b.sg - a.sg || b.gp - a.gp || a.nome.localeCompare(b.nome));
 }
 
-function atualizarClassificacao() {
-const classificacao = estatisticas();
-const tabela = classificacao.filter(clube => timesOwnados.includes(clube.nome));
-if (tabela.length === 0) {
-document.getElementById("tabelaClassificacao").innerHTML = '<tr><td colspan="9">Nenhum time ownado ainda.</td></tr>';
-return;
-}
-document.getElementById("tabelaClassificacao").innerHTML = tabela.map((clube, indice) =>
+function preencherTabela(id, competicao) {
+const tabela = estatisticas(competicao).filter(clube => timesOwnados.includes(clube.nome));
+document.getElementById(id).innerHTML = tabela.length === 0
+? '<tr><td colspan="9">Nenhum time ownado ainda.</td></tr>'
+: tabela.map((clube, indice) =>
 `<tr><td>${indice + 1}º</td><td>${clube.nome}</td><td><strong>${clube.pts}</strong></td><td>${clube.j}</td><td>${clube.v}</td><td>${clube.e}</td><td>${clube.d}</td><td>${clube.sg}</td><td>${clube.gp}</td></tr>`
 ).join("");
+}
+
+function atualizarClassificacao() {
+preencherTabela("tabelaBrasileirao", "brasileirao");
+preencherTabela("tabelaChampions", "champions");
+}
+
+function redefinirPontos() {
+const escolha = document.getElementById("tabelaRedefinir").value;
+if (!confirmarDuasVezes("redefinir" + escolha)) return;
+jogos = jogos.filter(jogo => {
+const competencia = competenciaDoJogo(jogo);
+if (escolha === "ambos") return false;
+return competencia !== escolha;
+});
+salvar();
+atualizar();
+aviso("Estatísticas e resultados da tabela redefinidos.");
 }
 
 let agenda = JSON.parse(localStorage.getItem("pisl_agenda")) || [];
@@ -814,7 +875,12 @@ if (!Number.isInteger(golsMandante) || !Number.isInteger(golsVisitante) || golsM
 aviso("Informe resultados válidos.");
 return;
 }
-const jogo = { mandante, visitante, golsMandante, golsVisitante, wo: false };
+const competicao = document.getElementById("competicaoResultado").value;
+if (!clubePertence(mandante, competicao) || !clubePertence(visitante, competicao)) {
+aviso("Escolha clubes da mesma competição selecionada.");
+return;
+}
+const jogo = { mandante, visitante, golsMandante, golsVisitante, wo: false, competicao };
 jogos.push(jogo);
 salvar();
 atualizar();
@@ -825,7 +891,12 @@ function registrarWO() {
 const presente = document.getElementById("clubePresente").value;
 const ausente = document.getElementById("clubeAusente").value;
 if (presente === ausente) { aviso("Os clubes precisam ser diferentes!"); return; }
-const jogo = { mandante: presente, visitante: ausente, golsMandante: 0, golsVisitante: 0, wo: true };
+const competicao = document.getElementById("competicaoWO").value;
+if (!clubePertence(presente, competicao) || !clubePertence(ausente, competicao)) {
+aviso("Escolha clubes da mesma competição selecionada.");
+return;
+}
+const jogo = { mandante: presente, visitante: ausente, golsMandante: 0, golsVisitante: 0, wo: true, competicao };
 jogos.push(jogo);
 salvar();
 atualizar();
