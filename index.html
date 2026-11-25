@@ -315,6 +315,9 @@ Administrador
 <div class="lista-clubes" id="clubesBrasil"></div>
 <h3>Europa</h3>
 <div class="lista-clubes" id="clubesEuropa"></div>
+<h3>Galeria de campeões</h3>
+<p class="legenda">Todos os campeões das temporadas da PISL.</p>
+<div id="galeriaCampeoes"></div>
 </section>
 
 
@@ -466,6 +469,28 @@ Administrador
 </select>
 <button class="botao excluir" onclick="redefinirPontos()">Redefinir Pontos</button>
 </div>
+
+<div class="painel">
+<h3>Gerenciar campeões</h3>
+<p>Defina o clube campeão de cada temporada da PISL.</p>
+<label>Temporada</label>
+<input type="number" id="temporadaCampeao" min="1" max="999" value="2">
+<label>Clube campeão</label>
+<select id="clubeCampeao"></select>
+<button class="botao" onclick="salvarCampeao()">Salvar campeão</button>
+<div id="listaCampeoesAdmin"></div>
+</div>
+
+<div class="painel">
+<h3>Criar amistoso</h3>
+<p>Escolha um clube do Brasileirão e um da Champions. Amistosos não alteram as classificações oficiais.</p>
+<label>Clube do Brasileirão</label>
+<select id="amistosoBrasil"></select>
+<label>Clube da Champions</label>
+<select id="amistosoEuropa"></select>
+<button class="botao" onclick="criarAmistoso()">Criar amistoso</button>
+<div id="listaAmistososAdmin"></div>
+</div>
 <div class="painel" id="painelEstatisticasAdmin">
 <h3>Estatísticas administrativas</h3>
 <p>Resumo das contas cadastradas na PISL.</p>
@@ -520,6 +545,8 @@ const clubes = [...clubesBrasil, ...clubesEuropa];
 
 let timesOwnados = JSON.parse(localStorage.getItem("pisl_ownados")) || ["Palmeiras", "Barcelona", "Corinthians"];
 let jogos = JSON.parse(localStorage.getItem("pisl_jogos")) || [];
+let campeoesPisl = [];
+let amistososPisl = [];
 
 function salvar() { localStorage.setItem("pisl_jogos", JSON.stringify(jogos)); }
 
@@ -539,6 +566,8 @@ document.querySelectorAll("nav button").forEach(b => b.classList.toggle("ativo",
 document.getElementById(id).classList.add("ativa");
 if (id === "chat") iniciarChat(); else pararChat();
 if (id === "notificacoes") atualizarNotificacoes(true);
+if (id === "clubes") carregarCampeoes();
+if (id === "jogos") carregarAmistosos();
 window.scrollTo({ top: 0, behavior: "smooth" });
 atualizar();
 }
@@ -612,10 +641,13 @@ function carregarClubes() {
 atualizarCartoesClubes();
 carregarOwnados();
 const opcoes = clubes.map(clube => `<option value="${clube}">${clube}</option>`).join("");
-["mandante", "visitante", "clubePresente", "clubeAusente", "agMandante", "agVisitante", "regTime", "timePerfil"].forEach(id => {
+["mandante", "visitante", "clubePresente", "clubeAusente", "agMandante", "agVisitante", "regTime", "timePerfil", "clubeCampeao"].forEach(id => {
 document.getElementById(id).innerHTML = opcoes;
 });
+document.getElementById("amistosoBrasil").innerHTML = clubesBrasil.map(clube => `<option value="${clube}">${clube}</option>`).join("");
+document.getElementById("amistosoEuropa").innerHTML = clubesEuropa.map(clube => `<option value="${clube}">${clube}</option>`).join("");
 }
+
 
 function competenciaDoJogo(jogo) {
 if (jogo.competicao === "brasileirao" || jogo.competicao === "champions") return jogo.competicao;
@@ -700,8 +732,13 @@ html += '<h3>Próximos jogos</h3>' + proximos.map(jogo =>
 `<div class="jogo agenda"><div class="placar"><div class="time">${jogo.mandante}</div><div class="gols">VS</div><div class="time">${jogo.visitante}</div></div><div class="rodape"><span>Horário: ${formatarHorario(jogo.horario)}</span><span>Entrar no servidor: <strong>${jogo.servidor}</strong></span></div></div>`
 ).join("");
 }
+if (amistososPisl.length > 0) {
+html += '<h3 class="subtitulo">Amistosos</h3>' + amistososPisl.map(a =>
+`<div class="jogo"><div class="placar"><div class="time">${a.mandante}</div><div class="gols">VS</div><div class="time">${a.visitante}</div></div><div class="rodape"><span>Amistoso — não vale pontos oficiais</span></div></div>`
+).join("");
+}
 if (jogos.length === 0) {
-html += proximos.length === 0 ? '<p class="vazio">Nenhum jogo ou resultado registrado ainda.</p>' : '';
+html += proximos.length === 0 && amistososPisl.length === 0 ? '<p class="vazio">Nenhum jogo ou resultado registrado ainda.</p>' : '';
 lista.innerHTML = html;
 return;
 }
@@ -731,6 +768,99 @@ const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto
 return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+
+async function carregarCampeoes() {
+  try {
+    const r = await chamar("/api/campeoes");
+    if (!r.ok) return;
+    campeoesPisl = Array.isArray(r.dados.campeoes) ? r.dados.campeoes : [];
+    const lista = document.getElementById("listaCampeoesAdmin");
+    if (lista) {
+      lista.innerHTML = campeoesPisl.map(c => `<div class="linha-admin">Temporada ${c.temporada} — ${c.clube}</div>`).join("") || '<p class="vazio">Nenhum campeão cadastrado.</p>';
+    }
+    const galeria = document.getElementById("galeriaCampeoes");
+    if (galeria) {
+      galeria.innerHTML = campeoesPisl.map(c => `<div class="painel"><h3>Temporada ${c.temporada}</h3><strong>${c.clube}</strong></div>`).join("") || '<p class="vazio">Nenhum campeão cadastrado.</p>';
+    }
+  } catch (e) {
+    console.error("Erro ao carregar campeões:", e);
+  }
+}
+
+async function salvarCampeao() {
+  const temporada = Number(document.getElementById("temporadaCampeao").value);
+  const clube = document.getElementById("clubeCampeao").value;
+  if (!Number.isInteger(temporada) || temporada < 1 || !clube) {
+    aviso("Informe uma temporada e um clube válido.");
+    return;
+  }
+  try {
+    const r = await chamar("/api/admin/campeoes", {
+      method: "POST",
+      body: JSON.stringify({ temporada, clube })
+    });
+    if (!r.ok) {
+      aviso(r.dados.erro || "Não foi possível salvar o campeão.");
+      return;
+    }
+    aviso("Campeão salvo com sucesso!");
+    await carregarCampeoes();
+  } catch (e) {
+    aviso(msgSemConexao(e));
+  }
+}
+
+async function carregarAmistosos() {
+  try {
+    const r = await chamar("/api/amistosos");
+    if (!r.ok) return;
+    amistososPisl = Array.isArray(r.dados.amistosos) ? r.dados.amistosos : [];
+    const lista = document.getElementById("listaAmistososAdmin");
+    if (lista) {
+      lista.innerHTML = amistososPisl.map(a => `<div class="linha-admin"><span>${a.mandante} x ${a.visitante}</span><button class="botao excluir" onclick="excluirAmistoso('${a.id}')">Excluir</button></div>`).join("") || '<p class="vazio">Nenhum amistoso cadastrado.</p>';
+    }
+    atualizarJogos();
+  } catch (e) {
+    console.error("Erro ao carregar amistosos:", e);
+  }
+}
+
+async function criarAmistoso() {
+  const mandante = document.getElementById("amistosoBrasil").value;
+  const visitante = document.getElementById("amistosoEuropa").value;
+  try {
+    const r = await chamar("/api/admin/amistosos", {
+      method: "POST",
+      body: JSON.stringify({ mandante, visitante })
+    });
+    if (!r.ok) {
+      aviso(r.dados.erro || "Não foi possível criar o amistoso.");
+      return;
+    }
+    aviso("Amistoso criado com sucesso!");
+    await carregarAmistosos();
+  } catch (e) {
+    aviso(msgSemConexao(e));
+  }
+}
+
+async function excluirAmistoso(id) {
+  if (!confirm("Deseja excluir este amistoso?")) return;
+  try {
+    const r = await chamar("/api/admin/amistosos/" + encodeURIComponent(id), {
+      method: "DELETE"
+    });
+    if (!r.ok) {
+      aviso(r.dados.erro || "Não foi possível excluir o amistoso.");
+      return;
+    }
+    aviso("Amistoso excluído.");
+    await carregarAmistosos();
+  } catch (e) {
+    aviso(msgSemConexao(e));
+  }
+}
+
 async function entrarAdmin() {
 const senha = document.getElementById("senhaAdmin").value;
 const erro = document.getElementById("erroLogin");
@@ -747,6 +877,8 @@ document.getElementById("senhaAdmin").value = "";
 atualizarJogos();
 carregarUsuariosAdmin();
 carregarEstatisticasAdmin();
+carregarCampeoes();
+carregarAmistosos();
 }
 
 
