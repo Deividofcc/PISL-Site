@@ -139,6 +139,24 @@ nav button[hidden] { display: none; }
 @media (max-width: 560px) { h2 { font-size: 32px; } .placar .gols { font-size: 26px; padding: 2px 12px; } nav { justify-content: flex-start; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
 .botao:disabled { opacity: .6; cursor: wait; }
+
+/* Perfil dos clubes */
+.perfil-clube-overlay { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.78); }
+.perfil-clube-overlay.aberto { display: flex; }
+.perfil-clube-caixa { width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; background: var(--painel); border: 1px solid var(--ouro); border-radius: 16px; padding: 22px; box-shadow: 0 15px 50px rgba(0,0,0,.5); }
+.perfil-clube-topo { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.perfil-clube-sigla { width: 64px; height: 64px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: var(--painel-2); border: 2px solid var(--ouro); color: var(--ouro); font: 800 22px var(--titulo); }
+.perfil-clube-titulo { flex: 1; min-width: 0; }
+.perfil-clube-titulo h2 { margin: 0; border: 0; padding: 0; font-size: 30px; overflow-wrap: anywhere; }
+.perfil-clube-info { background: var(--painel-2); border: 1px solid var(--linha); border-radius: 10px; padding: 12px; margin: 10px 0; }
+.perfil-clube-info p { margin: 5px 0; }
+.perfil-clube-info strong { color: var(--ouro-claro); }
+.perfil-clube-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 14px 0; }
+.perfil-clube-stat { text-align: center; padding: 12px 5px; background: var(--painel-2); border: 1px solid var(--linha); border-radius: 10px; }
+.perfil-clube-stat strong { display: block; color: var(--ouro); font: 700 25px var(--titulo); }
+.perfil-clube-stat span { color: var(--texto-suave); font-size: 12px; }
+.perfil-clube-fechar { width: 100%; margin-top: 12px; }
+
 </style>
 </head>
 <body class="sem-login">
@@ -298,6 +316,24 @@ Administrador
 <h3>Europa</h3>
 <div class="lista-clubes" id="clubesEuropa"></div>
 </section>
+
+
+<div id="perfilClubeOverlay" class="perfil-clube-overlay" onclick="if(event.target === this) fecharPerfilClube()">
+  <div class="perfil-clube-caixa" role="dialog" aria-modal="true" aria-labelledby="perfilClubeNome">
+    <div class="perfil-clube-topo">
+      <div class="perfil-clube-sigla" id="perfilClubeSigla"></div>
+      <div class="perfil-clube-titulo"><h2 id="perfilClubeNome"></h2></div>
+    </div>
+    <div class="perfil-clube-info">
+      <p><strong>Dono oficial:</strong> <span id="perfilClubeDono">Não informado</span></p>
+      <p><strong>Competição:</strong> <span id="perfilClubeCompeticao"></span></p>
+      <p><strong>Posição:</strong> <span id="perfilClubePosicao"></span></p>
+    </div>
+    <h3>Estatísticas</h3>
+    <div class="perfil-clube-stats" id="perfilClubeStats"></div>
+    <button class="botao perfil-clube-fechar" onclick="fecharPerfilClube()">Fechar</button>
+  </div>
+</div>
 
 <section id="classificacao">
 <h2>Classificações oficiais</h2>
@@ -513,9 +549,44 @@ const base = palavras.length > 1 ? palavras : [nome];
 return base.slice(0, 2).map(p => p[0]).join("").toUpperCase();
 }
 
+
+function abrirPerfilClube(nome) {
+const competicao = clubesBrasil.includes(nome) ? "brasileirao" : "champions";
+const tabela = estatisticas(competicao);
+const dados = tabela.find(clube => clube.nome === nome);
+if (!dados) return;
+
+document.getElementById("perfilClubeSigla").textContent = sigla(nome);
+document.getElementById("perfilClubeNome").textContent = nome;
+document.getElementById("perfilClubeDono").textContent = (perfilUsuario && perfilUsuario.donos && perfilUsuario.donos[nome]) || "Não informado";
+document.getElementById("perfilClubeCompeticao").textContent = nomeCompeticao(competicao);
+document.getElementById("perfilClubePosicao").textContent = (tabela.findIndex(clube => clube.nome === nome) + 1) + "º lugar";
+
+const estatisticasClube = [
+["Pontos", dados.pts],
+["Jogos", dados.j],
+["Vitórias", dados.v],
+["Empates", dados.e],
+["Derrotas", dados.d],
+["Gols marcados", dados.gp],
+["Gols sofridos", dados.gc],
+["Saldo de gols", dados.sg]
+];
+
+document.getElementById("perfilClubeStats").innerHTML = estatisticasClube.map(([titulo, valor]) =>
+'<div class="perfil-clube-stat"><strong>' + valor + '</strong><span>' + titulo + '</span></div>'
+).join("");
+
+document.getElementById("perfilClubeOverlay").classList.add("aberto");
+}
+
+function fecharPerfilClube() {
+document.getElementById("perfilClubeOverlay").classList.remove("aberto");
+}
+
 function cartaoClube(clube) {
 const dono = timesOwnados.includes(clube) ? " ownado" : "";
-return `<div class="clube${dono}"><span class="sigla">${sigla(clube)}</span>${clube}</div>`;
+return `<div class="clube${dono}" role="button" tabindex="0" onclick="abrirPerfilClube(this.dataset.clube)" data-clube="${clube}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPerfilClube(this.dataset.clube)}"><span class="sigla">${sigla(clube)}</span>${clube}</div>`;
 }
 
 function atualizarCartoesClubes() {
